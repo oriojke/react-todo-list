@@ -1,0 +1,23 @@
+.task-container{
+    border: 4px solid rgb(252, 247, 225);
+    background-color: white;
+    width:400px;
+    height:100px;
+    display:flex;
+}
+.task-container-btn{
+    width: 32px;
+    height: 32px;
+    border:none;
+    padding: 0px;
+}
+.task-container-btn.edit{
+    background: url('../icons/refresh.png');
+}
+.task-container-btn.delete{
+    background: url('../icons/remove.png');
+}
+.task-container input[type="text"]{
+    height:30px;
+    width:75%;
+}
