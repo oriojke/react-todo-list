@@ -1,37 +1,86 @@
 import { nanoid } from "nanoid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddButton from "./addbutton";
 import Task from "./task";
 import '../css/tasklist.css'
 
 function TaskList({taskList}){
+    //GET
+  //POST - новый объект без id
+  //PUT на /id - редактирование
+  //DELETE на /id - удаление
 
     const [todoList, changeList] = useState(taskList);
 
-    const RemoveTask = (id) => (
-        changeList(todoList.filter((e) =>  e.id !== id))
-    );
+    const apiUrl = 'http://185.246.66.84:3000/ndidyk/tasks';
 
-    const AddTask = () => (
-        changeList(
-            [...todoList,
-            {
-                id: nanoid(),
-                title: 'Новая задача',
-                completed: false
-            }]
-        )
-    );
+    useEffect(()=>{
+        getTasksList();
+      }, []);
 
-    const SwitchTask = (id) => (
-        changeList(todoList.map(e => e.id === id ? {...e, completed : !e.completed} : e))
-    );
-
-    const UpdateTask = (id, newTitle) => {
-        changeList(todoList.map(e => e.id === id ? {...e, title : newTitle} : e));
+      
+    const getTasksList = () => {
+        fetch(apiUrl)
+          .then((res) => res.json())
+          .then((data) => changeList(data));
     };
 
-    return <div className="tasklist">
+    const RemoveTask = (id) => {
+        const requestOptions = {
+            method: 'DELETE'
+        };
+        fetch(apiUrl + '/' + id, requestOptions)
+            .then(() => getTasksList());
+    };
+
+    const AddTask = () => {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: 'Новая задача', completed: false })
+        };
+        fetch(apiUrl, requestOptions)
+            .then(resp => resp.json())
+            .then(data => changeList([...todoList, data]));
+    };
+
+    const SwitchTask = (id) => {
+        const requestOptions = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+        };
+        todoList.forEach(e => {
+            if(e.id === id){
+                e.completed = !e.completed;
+                requestOptions.body = JSON.stringify(e);
+            }
+        });
+        fetch(apiUrl + '/' + id, requestOptions)
+            .then(() => getTasksList());
+    };
+
+    const UpdateTask = (id, newTitle) => {
+        //changeList(todoList.map(e => e.id === id ? {...e, title : newTitle} : e));
+        const requestOptions = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+        };
+        todoList.forEach(e => {
+            if(e.id === id){
+                e.title = newTitle;
+                requestOptions.body = JSON.stringify(e);
+            }
+        });
+        fetch(apiUrl + '/' + id, requestOptions)
+            .then(() => getTasksList());
+    };
+
+    function LoadingView(){
+        return <div className="tasklist">Подождите, идет загрузка данных...</div>;
+    }
+
+    function ReadyView(){
+        return <div className="tasklist">
         <AddButton OnClick={AddTask}></AddButton>
             {todoList.filter(e => e.completed === false).map(elem => 
                 <Task key={elem.id} task={elem} OnDelete={RemoveTask} OnUpdate={UpdateTask} OnSwitch={SwitchTask}></Task>
@@ -41,6 +90,9 @@ function TaskList({taskList}){
                 <Task key={elem.id} task={elem} OnDelete={RemoveTask} OnUpdate={UpdateTask} OnSwitch={SwitchTask}></Task>
             )}
     </div>
+    }
+
+    return todoList.length > 0 ? ReadyView() : LoadingView();
 }
 
 
