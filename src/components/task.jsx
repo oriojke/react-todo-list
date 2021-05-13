@@ -1,10 +1,11 @@
 import { nanoid } from 'nanoid';
-import { useEffect, useState } from 'react';
-import styles from '../css/task.css'
+import { useState } from 'react';
+import '../css/task.css'
 
 function Task({task, OnDelete, OnUpdate, OnSwitch}){
 
     const titleEditId = nanoid();
+    const checkboxId = 'chbx' + nanoid();
     
     const [titleReadOnly, setTitleReadOnly] = useState(true);
 
@@ -20,11 +21,23 @@ function Task({task, OnDelete, OnUpdate, OnSwitch}){
         OnUpdate(task.id, event.target.value);
     }
 
-    return(<div className="task-container">
-        <input type="checkbox" className="task-container-checkbox" readOnly={task.completed} defaultChecked={task.completed} onChange={()=>OnSwitch(task.id)}></input>
-        <input type="text" id={titleEditId} onBlur={endEditTitle} className="task-container-input" defaultValue={task.title} readOnly={titleReadOnly}></input>
-        <button className="task-container-btn edit" disabled={task.completed} onClick={()=>beginEditTitle()}></button>
-        <button className="task-container-btn delete" disabled={task.completed} onClick={() => OnDelete(task.id)}></button>
+    return(<div className="task-container__flex">
+        <div className="task-container">
+            <input type="checkbox" id={checkboxId} className="task-container-checkbox" readOnly={task.completed} defaultChecked={task.completed} onChange={()=>OnSwitch(task.id)}></input>
+            <label htmlFor={checkboxId}></label>
+            <input type="text" id={titleEditId} onBlur={endEditTitle} className="task-container-input" defaultValue={task.title} readOnly={titleReadOnly}></input>
+            {!task.completed &&
+                <>
+                <button className="task-container-btn edit" disabled={task.completed} onClick={()=>beginEditTitle()}></button>
+                <button className="task-container-btn delete" disabled={task.completed} onClick={() => OnDelete(task.id)}></button>
+                </>
+            }
+            {task.completed &&
+                <>
+                <button className="task-container-btn restore" disabled={task.completed} onClick={()=>OnSwitch(task.id)}></button>
+                </>
+            }
+        </div>
     </div>);
 }
 

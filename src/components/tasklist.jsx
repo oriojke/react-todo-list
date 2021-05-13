@@ -1,15 +1,9 @@
-import { nanoid } from "nanoid";
 import { useEffect, useState } from "react";
 import AddButton from "./addbutton";
 import Task from "./task";
 import '../css/tasklist.css'
 
 function TaskList({taskList}){
-    //GET
-  //POST - новый объект без id
-  //PUT на /id - редактирование
-  //DELETE на /id - удаление
-
     const [todoList, changeList] = useState(taskList);
 
     const apiUrl = 'http://185.246.66.84:3000/ndidyk/tasks';
@@ -45,6 +39,7 @@ function TaskList({taskList}){
     };
 
     const SwitchTask = (id) => {
+        console.log(123);
         const requestOptions = {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -60,7 +55,6 @@ function TaskList({taskList}){
     };
 
     const UpdateTask = (id, newTitle) => {
-        //changeList(todoList.map(e => e.id === id ? {...e, title : newTitle} : e));
         const requestOptions = {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -85,7 +79,9 @@ function TaskList({taskList}){
             {todoList.filter(e => e.completed === false).map(elem => 
                 <Task key={elem.id} task={elem} OnDelete={RemoveTask} OnUpdate={UpdateTask} OnSwitch={SwitchTask}></Task>
             )}
-            <div>Завершенные задачи</div>
+            {todoList.filter(e => e.completed === true).length > 0 && 
+                <div className="finished-banner">Завершенные задачи</div>
+            }
             {todoList.filter(e => e.completed === true).map(elem => 
                 <Task key={elem.id} task={elem} OnDelete={RemoveTask} OnUpdate={UpdateTask} OnSwitch={SwitchTask}></Task>
             )}
