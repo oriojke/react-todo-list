@@ -7,6 +7,7 @@ function TaskList({taskList}){
     const [todoList, changeList] = useState(taskList);
 
     const apiUrl = 'http://185.246.66.84:3000/ndidyk/tasks';
+    const apiUrlSubtasks = 'http://185.246.66.84:3000/ndidyk/subtasks';
 
     useEffect(()=>{
         getTasksList();
@@ -38,8 +39,25 @@ function TaskList({taskList}){
             .then(data => changeList([...todoList, data]));
     };
 
+    const FinishSubtasks = (taskId) => {
+        fetch(apiUrlSubtasks + '?taskId=' + taskId)
+            .then((res) => res.json())
+            .then((data) => {
+                if(data.length === 0) getTasksList();
+                data.forEach(e => {
+                    const requestOptions = {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                    };
+                    e.completed = true;
+                    requestOptions.body = JSON.stringify(e);
+                    fetch(apiUrlSubtasks + '/' + e.id, requestOptions)
+                        .then(() => getTasksList());
+                });
+            })
+    };
+
     const SwitchTask = (id) => {
-        console.log(123);
         const requestOptions = {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -51,7 +69,7 @@ function TaskList({taskList}){
             }
         });
         fetch(apiUrl + '/' + id, requestOptions)
-            .then(() => getTasksList());
+            .then(() => FinishSubtasks(id));
     };
 
     const UpdateTask = (id, newTitle) => {
@@ -75,7 +93,7 @@ function TaskList({taskList}){
 
     function ReadyView(){
         return <div className="tasklist">
-        <AddButton OnClick={AddTask}></AddButton>
+        <AddButton OnClick={AddTask} ButtonText="Добавить задачу"></AddButton>
             {todoList.filter(e => e.completed === false).map(elem => 
                 <Task key={elem.id} task={elem} OnDelete={RemoveTask} OnUpdate={UpdateTask} OnSwitch={SwitchTask}></Task>
             )}
